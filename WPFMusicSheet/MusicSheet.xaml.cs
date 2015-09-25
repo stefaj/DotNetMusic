@@ -55,12 +55,27 @@ namespace DotNetMusic.WPF
 
         }
 
+        public int GetWidthPerUnits(int no_units)
+        {
+            return prime * (no_units + 3);
+        }
+
+        public int GetHighlightedIndex()
+        {
+            return highlightIndex;
+        }
+
+        public int GetHighlightedWidth()
+        {
+            return GetWidthPerUnits(highlightIndex);
+        }
+
         public void SetNotes(Note[] notes)
         {
             this.notes.Clear();
             this.notes.AddRange(notes);
             this.InvalidateVisual();
-            this.Width = prime * (notes.Length+3);
+            this.Width = GetWidthPerUnits(notes.Length);
         }
 
         public void SetHighlightIndex(int n)
@@ -153,6 +168,23 @@ namespace DotNetMusic.WPF
                 return true;
             return false;
         }
+
+        private Durations GetClosestDuration(Durations duration)
+        {
+            Durations[] durations = Enum.GetValues(typeof(Durations)).Cast<Durations>().ToArray();
+            double smallestDistance = double.MaxValue - 1;
+            var smallest_key = Durations.wn;
+            foreach(var key in durations)
+            {
+                double diff = Math.Abs((int)key - (int)duration);
+                if(diff < smallestDistance)
+                {
+                    smallestDistance = diff;
+                    smallest_key = key;
+                }
+            }
+            return smallest_key;
+        }
    
         private void DrawNote(DrawingContext drawingContext,NoteNames note, Durations duration, float x, float y, int alter = 0, bool highlight = false)
         {
@@ -160,11 +192,12 @@ namespace DotNetMusic.WPF
             string character = "";
             int index = 0;
 
+            duration = GetClosestDuration(duration);
             if ((int)duration < (int)Durations.hn)
                 character = "0";
-            else if (duration == Durations.hn)
+            if (duration == Durations.hn)
                 character = "9";
-            if (duration == Durations.wn)
+            if ((int)duration >= (int)Durations.wn)
                 character = "w";
 
             
@@ -177,15 +210,15 @@ namespace DotNetMusic.WPF
 
             if(note == NoteNames.Rest)
             {
-                if(duration == Durations.wn)
+                if((int)duration >= (int)Durations.wn)
                     character = "W";
-                if(duration == Durations.hn)
+                else if(duration == Durations.hn)
                     character = "H";
-                if (duration == Durations.qn)
+                else if (duration == Durations.qn)
                     character = "Q";
-                if(duration == Durations.en)
+                else if(duration == Durations.en)
                     character = "E";
-                if(duration == Durations.sn)
+                else
                     character = "S";
                 index = 3;
             }
@@ -247,12 +280,12 @@ namespace DotNetMusic.WPF
             }
 
 
-            index += alter;
+            index += alter*6;
 
             float y_pos = y - index * (LINESPACING / 2);
             
             //Horizontal bar under note
-            if(index > 7 || index < -1)
+            if(index > 7 || index < -1 && note != NoteNames.Rest && character != "")
             {
                 Pen pen = new Pen(Brushes.Black, 1.0f);
                 drawingContext.DrawLine(pen, new Point(x - 6, y_pos + LINESPACING * 3 + LINESPACING / 2), new Point(x + 34, y_pos + LINESPACING * 3 + LINESPACING / 2));
@@ -296,15 +329,21 @@ namespace DotNetMusic.WPF
                     flagY = lineY;
                 }
 
-                // Draw the sharp accidental
-                if(ContainsSharp(note))
+                if(character != "")
+                    drawingContext.DrawLine(BEAMPEN, new Point(lineX, lineY), new Point(lineX, lineY + length));
+                else
                 {
-                    DrawString(drawingContext, "X", TypeFaces.StaffFont, TEXTBRUSH, x-10, y_pos+5, FONTSIZEEM - 10);
+                    throw new Exception("This shouldnt happen");
                 }
-                
-                drawingContext.DrawLine(BEAMPEN, new Point(lineX, lineY), new Point(lineX, lineY + length));
-                if (flag != "")
+
+                if (flag != "" && character != "")
                     DrawString(drawingContext, flag, TypeFaces.StaffFont, TEXTBRUSH, flagX, flagY, FONTSIZEEM, flip);
+            }
+
+            // Draw the sharp accidental
+            if (ContainsSharp(note))
+            {
+                DrawString(drawingContext, "X", TypeFaces.StaffFont, TEXTBRUSH, x - 10, y_pos + 5, FONTSIZEEM - 10);
             }
         }
 
@@ -352,17 +391,29 @@ namespace DotNetMusic.WPF
 
                 DrawNote(drawingContext, NoteNames.F, Durations.tn, (j++) * 40, PADDINGTOP);
                 //   DrawString(drawingContext, "q", TypeFaces.StaffFont, TEXTBRUSH, i*20, 0, 20);
-                this.Width = 20 * prime;
+                this.Width = GetWidthPerUnits(12);
             }
 
             else
             {
+                int baseOctave = notes[0].Octave;
+                float sum = 0; int total = 0;
+                foreach (var n in notes)
+                {
+                    if (!n.IsRest())
+                    {
+                        total += 1;
+                        sum += n.Octave;
+                    }
+                }
+                baseOctave = (int)(sum / (float)total);
                 for(int i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
                     NoteNames noteName = note.GetNoteName();
                     Durations dur = note.GetStandardNoteDuration();
-                    DrawNote(drawingContext, noteName, dur, (i+2) * prime, PADDINGTOP,0,highlightIndex == i);
+                    int alter = note.Octave - baseOctave;
+                    DrawNote(drawingContext, noteName, dur, (i + 2) * prime, PADDINGTOP, alter, highlightIndex == i);
                    // DrawNote(drawingContext, noteName, )
                 }
             }

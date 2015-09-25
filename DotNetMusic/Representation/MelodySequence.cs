@@ -196,7 +196,7 @@ namespace GeneticMIDI.Representation
                 info.Add(time, m);
                 time += (int)(1000 * Note.ToRealDuration(n.Duration));
                 m = new PlaybackMessage(PlaybackMessage.PlaybackMessageType.Stop, channel, (byte)n.Velocity, (byte)n.Pitch);
-                m.Tag = tag; // Experimental
+                //m.Tag = tag; // Experimental
                 info.Add(time, m);
                 time += 1;
             }
