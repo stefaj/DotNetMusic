@@ -1,0 +1,11 @@
+﻿<UserControl x:Class="DotNetMusic.WPF.MusicSheet"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Height="120" Width="325">
+    <Grid>
+        <Grid.Background>
+            <SolidColorBrush Color="Transparent"></SolidColorBrush>
+        </Grid.Background>
+      
+    </Grid>
+</UserControl>
