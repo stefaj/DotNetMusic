@@ -9,5 +9,5 @@ Features:
 * Saving and loading compositions to a compressed file with protocol buffers
 
 ## Requires
-[NAudio](https://naudio.codeplex.com/)
-[ProtoBuf.NET](https://github.com/mgravell/protobuf-net)
+* [NAudio](https://naudio.codeplex.com/)
+* [ProtoBuf.NET](https://github.com/mgravell/protobuf-net)
