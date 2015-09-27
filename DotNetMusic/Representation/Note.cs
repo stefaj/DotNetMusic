@@ -110,7 +110,7 @@ namespace GeneticMIDI.Representation
 
         public static int ToNoteLength(int midi_length, int delta_ticks_qn, double tempo)
         {
-            return (int)((double)midi_length / (double)delta_ticks_qn * (int)Durations.qn * (60 / tempo));
+            return (int)((double)midi_length / (double)delta_ticks_qn * (int)Durations.qn * (60/tempo));
         }
 
         public static int ToMidiLength(int note_length, int delta_ticks_qn, double tempo)

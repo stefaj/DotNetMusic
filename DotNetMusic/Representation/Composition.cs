@@ -68,17 +68,105 @@ namespace GeneticMIDI.Representation
             return str;
         }
 
+        public static Composition LoadMidiType1(MidiFile f)
+        {
+            Composition comp = new Composition();
+            int c = 1;
+            foreach(var trackEvents in f.Events)
+            {
+                Track t = new Track();
+                
+                t.Channel = (byte)c++;
+                TempoEvent tempo = new TempoEvent((int)(Note.ToRealDuration((int)Durations.qn, 60) * 1000000), 0);
+                HarmonySequence seq = new HarmonySequence();
+                long lastAbsTime = -1;
+
+                List<int> chordNotes = new List<int>(); int chordDuration = 0;
+                PatchNames instr = (PatchNames)9999;
+
+                bool add = true;
+                foreach(var e in trackEvents)
+                {
+                    if (e as TempoEvent != null)
+                    {
+                        tempo = (TempoEvent)e;
+                    }
+                    if (e as PatchChangeEvent != null)
+                    {
+                        var p = e as PatchChangeEvent;
+                        t.Instrument = (PatchNames)p.Patch;      
+                  
+                        if(t.Instrument == instr)
+                        {
+                            break;
+                        }
+                        instr = t.Instrument;
+                        /*if(t.Duration < 1)
+                        {
+                            foreach(var t_ in comp.Tracks)
+                                if(t_.Instrument == (PatchNames)p.Patch)
+                                {
+                                    t = t_;
+                                    seq = t_.GetMainSequence() as HarmonySequence;
+                                    add = false;
+                                    break;
+                                }
+                        }*/
+                    }
+                    NoteOnEvent on = e as NoteOnEvent;
+                   
+                    if (on != null && on.OffEvent != null)
+                    {
+                        int newDuration = Note.ToNoteLength(on.NoteLength, f.DeltaTicksPerQuarterNote, tempo.Tempo);
+
+                        if (on.AbsoluteTime == lastAbsTime && chordDuration==newDuration)//skip chords
+                        {
+                            chordNotes.Add(on.NoteNumber);
+                        }
+                        else
+                        {
+                            Chord lastChord = new Chord(chordNotes.ToArray(), chordDuration);
+                            chordNotes.Clear(); chordDuration = 0;
+                            seq.AddChord(lastChord);
+
+                            chordNotes.Add(on.NoteNumber);
+                        }
+
+                        chordDuration = newDuration;
+                        lastAbsTime = on.AbsoluteTime;
+                    }
+                }
+                if(chordNotes.Count > 0)
+                {
+                    Chord lastChord = new Chord(chordNotes.ToArray(), chordDuration);
+                    chordNotes.Clear(); chordDuration = 0;
+                    seq.AddChord(lastChord);
+                }
+                
+                t.AddSequence(seq);
+                if (!comp.Tracks.Contains(t) && t.Duration > 0 && add)
+                    comp.Add(t);
+            }
+            
+            return comp;
+        }
+
         public static Composition LoadFromMIDI(string filename)
         {
             Composition comp = new Composition();
             comp.Tracks.Clear();
 
             NAudio.Midi.MidiFile f = new MidiFile(filename);
+    
+
+            if (f.Events.MidiFileType == 1)
+                return LoadMidiType1(f);
+            
             f.Events.MidiFileType = 0;
 
-
             byte max_channels = 0;
-            foreach (var e in f.Events[0])
+            foreach(var trackEvent in f.Events)
+            foreach (var e in trackEvent)
                 if (e.Channel > max_channels)
                     max_channels = (byte)e.Channel;
             max_channels++;
@@ -92,11 +180,12 @@ namespace GeneticMIDI.Representation
                 tempos[i] = new TempoEvent((int)(Note.ToRealDuration((int)Durations.qn, 60) * 1000), 0);
                 tempos[i].Tempo = 60;
             }
-            foreach (var e in f.Events[0])
+            foreach(var trackEvents in f.Events)
+            foreach (var e in trackEvents)
             {
                 if (e as TempoEvent != null)
                 {
-                    //tempos[e.Channel] = (TempoEvent)e;
+                    tempos[e.Channel] = (TempoEvent)e;
                 }
                 if (e as PatchChangeEvent != null)
                 {

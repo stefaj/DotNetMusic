@@ -14,6 +14,11 @@ namespace GeneticMIDI.Representation
 
         public int Length { get { return Notes.Length; } }
 
+        public Chord()
+        {
+            this.Velocity = 127;
+        }
+
         public Chord(int[] pitches, int duration, int velocity=127 )
         {
             this.Duration = duration;
