@@ -68,6 +68,12 @@ namespace GeneticMIDI.Representation
             return str;
         }
 
+
+        /// <summary>
+        /// Loads a Harmony Sequence though
+        /// </summary>
+        /// <param name="f"></param>
+        /// <returns></returns>
         public static Composition LoadMidiType1(MidiFile f)
         {
             Composition comp = new Composition();
@@ -159,8 +165,8 @@ namespace GeneticMIDI.Representation
             NAudio.Midi.MidiFile f = new MidiFile(filename);
     
 
-            if (f.Events.MidiFileType == 1)
-                return LoadMidiType1(f);
+          //  if (f.Events.MidiFileType == 1)
+           //     return LoadMidiType1(f);
             
             f.Events.MidiFileType = 0;
 
@@ -239,11 +245,18 @@ namespace GeneticMIDI.Representation
                 {
                     foreach (PlaybackMessage message in info.Messages[keys[i]])
                     {
-                        var e = MidiEvent.FromRawMessage(message.GenerateMidiMessage().RawData);
-                        int note_dur = (int)Note.ToNoteDuration(keys[i]);
-                        int midi_dur = Note.ToMidiLength(note_dur, 240, 60);
-                        e.AbsoluteTime = keys[i];
-                        trackEvents.Add(e);                    
+                        try
+                        {
+                            var e = MidiEvent.FromRawMessage(message.GenerateMidiMessage().RawData);
+                            int note_dur = (int)Note.ToNoteDuration(keys[i]);
+                            int midi_dur = Note.ToMidiLength(note_dur, 240, 60);
+                            e.AbsoluteTime = keys[i];
+                            trackEvents.Add(e);
+                        }
+                        catch
+                        {
+                            // TODO figure out crash
+                        }
                     }
                     int sleep_dur = keys[i + 1] - keys[i];
                     //Thread.Sleep(sleep_dur);
