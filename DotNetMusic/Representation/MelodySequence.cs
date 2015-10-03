@@ -224,6 +224,47 @@ namespace GeneticMIDI.Representation
             return sequences.ToArray();
         }
 
+        public void Trim(int newSize)
+        {
+            if (newSize < sequence.Count)
+            {
+                this.sequence.RemoveRange(newSize, sequence.Count - newSize);
+            }
+        }
+
+        public void NormalizeNotes(int octave)
+        {
+            foreach(var n in sequence)
+            {
+                n.StandardizeDuration();
+                n.Octave = octave;
+            }
+        }
+
+        public void StandardizeDuration()
+        {
+            foreach (var n in sequence)
+            {
+                n.StandardizeDuration();
+                //n.Octave = octave;
+            }
+        }
+
+        public int CalculateAverageOctave()
+        {
+            int sum = 0;
+            int count = 0;
+            foreach(var n in sequence)
+            {
+                if(!n.IsRest())
+                {
+                    count++;
+                    sum += n.Octave;
+                }
+            }
+            return (int)((double)sum / (double)count);
+        }
+
 
         public object Clone()
         {
