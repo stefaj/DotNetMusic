@@ -263,6 +263,18 @@ namespace GeneticMIDI.Representation
                 }
 
                 // Append the end marker to the track
+                if(trackEvents[trackEvents.Count - 1].CommandCode == MidiCommandCode.NoteOn)
+                {
+                    var noteOn = trackEvents[trackEvents.Count - 1] as NoteOnEvent;
+                    int note = noteOn.NoteNumber;
+                    int duration = noteOn.NoteLength;
+                    int channel = noteOn.Channel;
+                    var offM = MidiMessage.StopNote(note, noteOn.Velocity, channel);
+                    var offE = MidiEvent.FromRawMessage(offM.RawData);
+                    offE.AbsoluteTime = noteOn.AbsoluteTime;
+                    trackEvents.Add(offE);
+                }
+
                 long absoluteTime = 0;
                 if (trackEvents.Count > 0)
                     absoluteTime = trackEvents[trackEvents.Count - 1].AbsoluteTime+100;
