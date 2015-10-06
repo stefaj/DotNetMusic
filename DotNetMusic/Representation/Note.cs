@@ -9,7 +9,15 @@ using System.Threading.Tasks;
 
 namespace GeneticMIDI.Representation
 {
+    /// <summary>
+    /// Includes Rest
+    /// </summary>
     public enum NoteNames { C, Cs, D, Ds, E, F, Fs, G, GS, A, As, B, Rest };
+
+    /// <summary>
+    /// Notes names without rest
+    /// </summary>
+    public enum NoteNamesWORest { C, Cs, D, Ds, E, F, Fs, G, GS, A, As, B };
 
     public enum Durations { tn=1, sn=2, en=4, qn=8, hn=16, wn=32, bn=64};
 
@@ -245,6 +253,28 @@ namespace GeneticMIDI.Representation
             }
 
             Duration = (int)durations[index];
+        }
+
+        public static int[] GetDurationRange()
+        {
+            var durations = Enum.GetValues(typeof(Durations)).Cast<Durations>().ToArray();
+            int[] durs = new int[durations.Length];
+            int j = 0;
+            foreach (var i in durations)
+                durs[j++] = (int)i;
+            return durs;
+        }
+
+        public static int[] GetDurationRange(int low, int high)
+        {
+            int[] durs = GetDurationRange();
+            List<int> filtered = new List<int>();
+            foreach(int d in durs)
+            {
+                if (d >= low && d <= high)
+                    filtered.Add(d);
+            }
+            return filtered.ToArray();
         }
 
         public static Note[] LoadFromFileSampled(string filename)
