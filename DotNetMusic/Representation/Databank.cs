@@ -30,6 +30,12 @@ namespace GeneticMIDI.Representation
             defaultPaths["Test"] = dir + @"\Test";
         }
 
+        public static string[] GetCategories()
+        {
+            GenerateDefaultPaths("");
+            return defaultPaths.Keys.ToArray();
+        }
+
         public Databank(string dir)
         {
             categories = new Dictionary<string, CompositionCategory>();

@@ -83,6 +83,11 @@ namespace GeneticMIDI.Representation
             return cat;
         }
 
+        public override string ToString()
+        {
+            return this.CategoryName;
+        }
+
 
         public static string GetFilePath(string dir, string category)
         {
