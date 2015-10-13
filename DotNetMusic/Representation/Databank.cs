@@ -114,6 +114,7 @@ namespace GeneticMIDI.Representation
                 db.Unload(key); // Free from memory
             }
 
+
             GenerateDefaultPaths(libraryDir);
 
             return db;
