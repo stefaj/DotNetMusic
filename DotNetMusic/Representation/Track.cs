@@ -60,6 +60,13 @@ namespace GeneticMIDI.Representation
             sequences = new List<ISequence>();
         }
 
+
+        public void Clear()
+        {
+            sequences.Clear();
+            Duration = 0;
+        }
+
         public void AddSequence(ISequence seq)
         {
             if (seq == null)
