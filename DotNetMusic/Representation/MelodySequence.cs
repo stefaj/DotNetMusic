@@ -136,7 +136,18 @@ namespace GeneticMIDI.Representation
         public void Transpose(int ht)
         {
             foreach (Note n in sequence)
-                n.Pitch+=ht;
+                if(!n.IsRest())
+                    n.Pitch+=ht;
+        }
+
+        public void OctaveUp()
+        {
+            Transpose(12);
+        }
+
+        public void OctaveDown()
+        {
+            Transpose(-12);
         }
 
         public void ScaleVelocity(float scale)
