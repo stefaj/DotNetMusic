@@ -26,6 +26,7 @@ namespace GeneticMIDI.Representation
             defaultPaths["Jazz"] = dir + @"\Jazz";
             defaultPaths["Pop"] = dir + @"\Pop_and_Top40";
             defaultPaths["Video Games"] = dir + @"\Video_Games";
+            defaultPaths["Drums"] = dir + @"\Drums";
             defaultPaths["Classical Piano"] = dir + @"\Classical Piano Midis";
             defaultPaths["Test"] = dir + @"\Test";
         }
@@ -66,6 +67,17 @@ namespace GeneticMIDI.Representation
                   categories[categoryName] = CompositionCategory.LoadFromFile(defaultPaths[categoryName], categoryName);
                   return categories[categoryName];
             }
+            else
+            {
+                try
+                {
+                    CompositionCategory.LoadFromFile(path + "\\" + categoryName, categoryName);
+                }
+                catch
+                {
+                    throw new Exception("Could not load " + categoryName);
+                }
+                }
             throw new Exception("Not found");
         }
 

@@ -43,6 +43,13 @@ namespace GeneticMIDI.Representation
             this.CategoryName = name;
         }
 
+        public CompositionCategory(string name, string path, Composition[] comps)
+        {
+            this.CategoryName = name;
+            this.OriginalPath = path;
+            this.Compositions = comps;
+        }
+
         public void Clear()
         {
             this.CategoryName = "";
@@ -50,6 +57,10 @@ namespace GeneticMIDI.Representation
             this.Compositions = null;
         }
 
+        /// <summary>
+        /// Load compositions from MIDI
+        /// </summary>
+        /// <param name="parallel"></param>
         public void LoadCompositions(bool parallel=false)
         {
             if(!parallel)
@@ -57,6 +68,7 @@ namespace GeneticMIDI.Representation
             else
                 this.Compositions = Utils.LoadCompositionsParallel(this.OriginalPath);
         }
+
 
         public static CompositionCategory LoadFromFile(string path, string category)
         {
