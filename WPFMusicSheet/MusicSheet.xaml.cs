@@ -154,6 +154,38 @@ namespace DotNetMusic.WPF
             RaiseEvent(newEventArgs);
         }
 
+        public void SetHighlight(int index, bool isHighlighted)
+        {
+            var track = score.Tracks[0];
+            var voice = track.Bars[0].Voices[0];
+
+            if (index < voice.Beats.Count)
+            {
+                var beat = voice.Beats[index];
+                foreach (var n in beat.Notes)
+                {
+                    n.IsHighlighted = isHighlighted;
+                }
+            }            
+            
+        }
+
+        int highlightIndex = -1;
+        public void SetHighlightIndex(int index)
+        {
+            if (index < 0)
+                return;
+            if (score.Tracks.Count < 1)
+                return;
+
+            if(highlightIndex > -1)
+                SetHighlight(highlightIndex, false);
+            SetHighlight(index, true);
+            highlightIndex = index;
+            
+            _renderer.Render(score.Tracks[0]);
+        }
+
         public void SetNotes(GeneticMIDI.Representation.Track track)
         {
 
@@ -249,14 +281,14 @@ namespace DotNetMusic.WPF
 
                 Note note = new Note();
                 
+                
                 if (!n.IsRest())
                 {
                     note.Tone = n.NotePitch;
                     note.Octave = n.Octave + dist4;
+
                     be.AddNote(note);
-                    be.IsEmpty = false;
-
-
+                    be.IsEmpty = false;                       
                 }
 
                 if (n.IsRest() && n.Duration < 2)
