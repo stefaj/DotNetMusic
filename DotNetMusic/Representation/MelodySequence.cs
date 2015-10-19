@@ -307,6 +307,19 @@ namespace GeneticMIDI.Representation
             return (int)((double)sum / (double)count);
         }
 
+        public void DoubleSpeed()
+        {
+            foreach (var n in Notes)
+                n.Duration /= 2;
+
+        }
+
+        public void HalveSpeed()
+        {
+            foreach (var n in Notes)
+                n.Duration *= 2;
+        }
+
 
         public object Clone()
         {
