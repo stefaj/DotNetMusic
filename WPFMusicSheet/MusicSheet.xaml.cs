@@ -179,7 +179,13 @@ namespace DotNetMusic.WPF
             b.AddVoice(v);
 
             t.Name = track.Instrument.ToString().Replace("_", " ");
-            
+
+            //t.IsPercussion = true;
+            if(t.IsPercussion)
+            {
+                
+                b.Clef = Clef.Neutral;
+            }
 
             int i = 0;
 
@@ -193,6 +199,7 @@ namespace DotNetMusic.WPF
                 Beat be = new Beat();
                 be.Index = i++;
 
+                
                 GeneticMIDI.Representation.Durations dur;
                 int remainder;
 
@@ -241,6 +248,7 @@ namespace DotNetMusic.WPF
                 be.Dots = dots;
 
                 Note note = new Note();
+                
                 if (!n.IsRest())
                 {
                     note.Tone = n.NotePitch;
@@ -264,7 +272,7 @@ namespace DotNetMusic.WPF
 
             }
 
-
+            
 
             v.Bar = b;
 
@@ -277,6 +285,7 @@ namespace DotNetMusic.WPF
 
             score.Finish();
 
+ 
             //TablatureControl
 
             _renderer.Render(t);
@@ -284,10 +293,9 @@ namespace DotNetMusic.WPF
 
             /*TablatureControl.Track = t; 
             TablatureControl.InvalidateVisual();
-            TablatureControl.InvalidateTrack();        */   
+            TablatureControl.InvalidateTrack();        */
 
-            
-  
+
             
         }
 
