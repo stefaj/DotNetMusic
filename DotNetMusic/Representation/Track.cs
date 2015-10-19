@@ -81,6 +81,11 @@ namespace GeneticMIDI.Representation
             return sequences[0];
         }
 
+        public MelodySequence GetMelodySequence()
+        {
+            return sequences[0] as MelodySequence;
+        }
+
         public PlaybackInfo GeneratePlaybackInfo(int time = 0)
         {
             PlaybackInfo info = new PlaybackInfo();

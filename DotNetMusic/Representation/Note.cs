@@ -238,22 +238,69 @@ namespace GeneticMIDI.Representation
 
         public void StandardizeDuration()
         {
+
+            var dur = GetClosestDuration();
+
+            Duration = (int)dur;
+        }
+
+        public Durations GetClosestDuration()
+        {
             var durations = Enum.GetValues(typeof(Durations)).Cast<Durations>().ToArray();
 
             int index = 0;
             double smallestError = int.MaxValue - 1;
-            for(int i = 0; i < durations.Length; i++)
+            for (int i = 0; i < durations.Length; i++)
             {
                 double error = (Duration - (int)durations[i]) * (Duration - (int)durations[i]);
-                if(error < smallestError)
+                if (error < smallestError)
                 {
                     smallestError = error;
                     index = i;
-                }   
+                }
+            }
+            return durations[index];
+        }
+
+        public void GetClosestLowerDurationAndRemainder(out Durations dur, out int remainder)
+        {
+            var durations = Enum.GetValues(typeof(Durations)).Cast<Durations>().ToArray();
+
+            int index = 0;
+            double smallestError = int.MaxValue - 1;
+            for (int i = 0; i < durations.Length; i++)
+            {
+                double error = (Duration - (int)durations[i]) * (Duration - (int)durations[i]);
+                if (error < smallestError && (int)durations[i] < Duration)
+                {
+                    smallestError = error;
+                    index = i;
+                }
             }
 
-            Duration = (int)durations[index];
+            dur = durations[index];
+
+            remainder = this.Duration - (int)dur;
+
         }
+
+        public int GetNumberOfDots()
+        {
+
+            Durations dur;
+            int remainder;
+            GetClosestLowerDurationAndRemainder(out dur, out remainder);
+
+            int half = ((int)dur) / 2;
+
+            int dots = 0;
+            if(half > 0)
+                dots = remainder / half;
+
+            return dots;
+
+        }
+
 
         public static int[] GetDurationRange()
         {

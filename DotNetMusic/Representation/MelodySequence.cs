@@ -191,6 +191,37 @@ namespace GeneticMIDI.Representation
             return noteStr;
         }
 
+        /// <summary>
+        /// Returns the average pitch
+        /// </summary>
+        /// <returns></returns>
+        public double GetPitchAvg()
+        {
+            double sum = 0;
+
+            for(int i = 0; i < sequence.Count; i++)
+            {
+                sum += sequence[i].Pitch;
+            }
+
+            return sum / sequence.Count;
+        }
+
+        /// <summary>
+        /// Returns the standard deviation of the pitch
+        /// </summary>
+        /// <returns></returns>
+        public double GetPitchSTD()
+        {
+            double avg = GetPitchAvg();
+            double sum = 0;
+            for(int i = 0; i < sequence.Count; i++)
+            {
+                sum += Math.Pow(sequence[i].Pitch - avg, 2);
+            }
+            return Math.Sqrt(sum / sequence.Count);
+        }
+
         public PlaybackInfo GeneratePlaybackInfo(byte channel, int time = 0)
         {
             PlaybackInfo info = new PlaybackInfo();
