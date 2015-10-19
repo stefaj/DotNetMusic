@@ -31,8 +31,6 @@ namespace DotNetMusic.WPF
     public partial class MusicSheet : UserControl
     {
 
-        public static readonly RoutedEvent RenderFinishedEvent = EventManager.RegisterRoutedEvent("RenderFinished", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(MusicSheet));
-
 
         Score score;
 
@@ -43,9 +41,6 @@ namespace DotNetMusic.WPF
         public Settings Settings{get; set;}
 
         private ScoreRenderer _renderer;
-
-
-        public ObservableCollection<ImageSource> PartialResults { get; set; }
 
         public MusicSheet()
         {
@@ -62,19 +57,9 @@ namespace DotNetMusic.WPF
             settings.Layout.Mode = "horizontal";
             Settings = settings;
 
-            PartialResults = new ObservableCollection<ImageSource>();
             _renderer = new ScoreRenderer(settings, this);
 
-            _renderer.PreRender += () =>
-            {
-                lock (this)
-                {
-                    Dispatcher.BeginInvoke(new Action(() =>
-                    {
-                        PartialResults.Clear();
-                    }));
-                }
-            };
+
             _renderer.PartialRenderFinished += result =>
             {
                 lock (this)
@@ -93,32 +78,12 @@ namespace DotNetMusic.WPF
                     OnRenderFinished(result);
                 }));
             };
+            ThreadPool.SetMinThreads(1, 1);
+            ThreadPool.SetMaxThreads(2, 2);
         }
 
         [DllImport("gdi32.dll")]
         private static extern bool DeleteObject(IntPtr hObject);
-
-        private void AddPartialResult(RenderFinishedEventArgs result)
-        {
-            lock (this)
-            {
-                Width = result.TotalWidth;
-                Height = result.TotalHeight;
-                var bitmap = (Bitmap)result.RenderResult;
-                IntPtr hBitmap = bitmap.GetHbitmap();
-                try
-                {
-                    PartialResults.Add(Imaging.CreateBitmapSourceFromHBitmap(
-                            hBitmap,
-                            IntPtr.Zero, Int32Rect.Empty,
-                            BitmapSizeOptions.FromWidthAndHeight(bitmap.Width, bitmap.Height)));
-                }
-                finally
-                {
-                    DeleteObject(hBitmap);
-                }
-            }
-        }
 
         private void DrawResult(RenderFinishedEventArgs result)
         {
@@ -138,8 +103,11 @@ namespace DotNetMusic.WPF
                             hBitmap,
                             IntPtr.Zero, Int32Rect.Empty,
                             BitmapSizeOptions.FromWidthAndHeight(bitmap.Width, bitmap.Height));
-                    imagi.Source = bitmapSource;
-                    PartialResults.Add(bitmapSource);
+                    imagi.Dispatcher.Invoke(() =>
+                    {
+                        imagi.Source = bitmapSource;
+                    });
+                    //PartialResults.Add(bitmapSource);
                 }
                 finally
                 {
@@ -150,8 +118,7 @@ namespace DotNetMusic.WPF
 
         protected virtual void OnRenderFinished(RenderFinishedEventArgs e)
         {
-            RoutedEventArgs newEventArgs = new RoutedEventArgs(RenderFinishedEvent);
-            RaiseEvent(newEventArgs);
+
         }
 
         public void SetHighlight(int index, bool isHighlighted)
@@ -182,9 +149,20 @@ namespace DotNetMusic.WPF
                 SetHighlight(highlightIndex, false);
             SetHighlight(index, true);
             highlightIndex = index;
+
             
-            _renderer.Render(score.Tracks[0]);
+            int i1, i2;
+            ThreadPool.GetAvailableThreads(out i1, out i2);
+            if (i1 > 0)
+            {
+                ThreadPool.QueueUserWorkItem(state =>
+                    {
+                        _renderer.Render(score.Tracks[0]);
+                    });
+            }
         }
+
+    
 
         public void SetNotes(GeneticMIDI.Representation.Track track)
         {
