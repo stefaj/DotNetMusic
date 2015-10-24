@@ -157,7 +157,14 @@ namespace DotNetMusic.WPF
             {
                 ThreadPool.QueueUserWorkItem(state =>
                     {
-                        _renderer.Render(score.Tracks[0]);
+                        try
+                        {
+                            _renderer.Render(score.Tracks[0]);
+                        }
+                        catch
+                        {
+
+                        }
                     });
             }
         }
@@ -166,6 +173,9 @@ namespace DotNetMusic.WPF
 
         public void SetNotes(GeneticMIDI.Representation.Track track)
         {
+
+            if (track.Length < 1)
+                return;
 
             var mel = track.GetMelodySequence();
 
